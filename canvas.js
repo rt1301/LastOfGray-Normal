@@ -1,15 +1,15 @@
 window.onload = function()
 {
-	    var requestAnimFrame = (function () {
-        return window.requestAnimationFrame ||
-        window.webkitRequestAnimationFrame ||
-        window.mozRequestAnimationFrame ||
-        window.oRequestAnimationFrame ||
-        window.msRequestAnimationFrame ||
-        function (callback) {
-            window.setTimeout(callback, 1000 / 60, new Date().getTime());
-        };
-})();
+	var requestAnimFrame = (function () 
+	{
+    return window.requestAnimationFrame ||
+    window.webkitRequestAnimationFrame ||
+    window.mozRequestAnimationFrame ||
+    window.oRequestAnimationFrame ||
+    window.msRequestAnimationFrame ||
+    function (callback) {
+        window.setTimeout(callback, 1000 / 60, new Date().getTime());
+    }})();
     
 	var  ctx, toggle;
 	var canvas = document.querySelector("canvas");
@@ -17,6 +17,7 @@ window.onload = function()
 	var height = window.innerHeight - 40;
 	var direction = false;
 	var interval;
+	// function to initialize the program
 	function init()
 	{
 		canvas.width = window.innerWidth - 40;
@@ -24,6 +25,7 @@ window.onload = function()
 		ctx = canvas.getContext('2d');
 		interval = setInterval(animate,1);
 	}
+	// Colors of the arc
 	var colors = ["steelblue","yellow"];
 	// Creating Arcs of different colors
 	var ring = [];
@@ -52,16 +54,15 @@ window.onload = function()
     	
 	}
 
-init();
-var mouse = {
-	x: undefined,
-	y: undefined
-}
-window.addEventListener("mousemove",function(event){
-	mouse.x = event.x;
-	mouse.y = event.y;
-})
+   init();
 
+
+	window.addEventListener("mousemove",function(event)
+	{
+				mouse.x = event.x;
+				mouse.y = event.y;
+	});
+// Creating the bouncing ball
 var ball = new circle(width/2,height/2 + 200, "yellow", 5, direction,2);
 
 // Circle object
@@ -102,17 +103,20 @@ var ball = new circle(width/2,height/2 + 200, "yellow", 5, direction,2);
 			ctx.fillStyle = this.color;
 			ctx.fill();
 		}
+		// New position of the ball when clicked
 		this.newPos = function() 
 		{
 			this.gravitySpeed += this.gravity;
 			this.y += this.speedY + this.gravitySpeed; 
 			this.hitBottom();
 		}
+		// Updated position of the ball
 		this.objUpdate = function()
 		{
 			this.newPos();
 			this.draw();
 		}
+		// Function to make the ball go down when not clicked
 		 this.hitBottom = function() 
 		 {
 	    var rockbottom = height/2 + 200;
@@ -123,9 +127,9 @@ var ball = new circle(width/2,height/2 + 200, "yellow", 5, direction,2);
 	      ball.speedY = 0;
 	  	}	
      	}
-
+     	// Function when ball crashes with the arc
      	this.crashWith = function(otherobj) 
-  {
+  		{
      	var mycol =this.color;
      	var othercol = otherobj.color;
 	    var mytop = this.y - this.radius;
@@ -150,11 +154,12 @@ var ball = new circle(width/2,height/2 + 200, "yellow", 5, direction,2);
   }
 	    
 }
+// To move the ball up
 	function moveUp()
 	{
 		ball.speedY -= 0.5;
 	}
-
+// To move the ball down
 	function accelerate(n){
 		ball.gravity = n;
 	}
@@ -162,10 +167,11 @@ var ball = new circle(width/2,height/2 + 200, "yellow", 5, direction,2);
    {
    	moveUp();
    }
+// function corresponding to accelerate function
    canvas.onmouseup = function () {
    	accelerate(0.005);
    }
-
+// Stop game function
 function end () 
 {
 	for (var i = 0; i < ring.length; i++) 
@@ -185,4 +191,5 @@ function end ()
 }
 
   
- }
+
+}
