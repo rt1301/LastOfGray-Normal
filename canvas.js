@@ -1,80 +1,82 @@
 window.onload = function()
 {
-	var requestAnimFrame = (function () 
-	{
-    return window.requestAnimationFrame ||
-    window.webkitRequestAnimationFrame ||
-    window.mozRequestAnimationFrame ||
-    window.oRequestAnimationFrame ||
-    window.msRequestAnimationFrame ||
-    function (callback) {
-        window.setTimeout(callback, 1000 / 60, new Date().getTime());
-    }})();
-    
-	var  ctx, toggle;
+	var ctx;
 	var canvas = document.querySelector("canvas");
 	var width = window.innerWidth - 40;
 	var height = window.innerHeight - 40;
-	var direction = false;
 	var interval;
-	// function to initialize the program
 	function init()
 	{
 		canvas.width = window.innerWidth - 40;
 		canvas.height = window.innerHeight - 40;
 		ctx = canvas.getContext('2d');
-		interval = setInterval(animate,1);
 	}
-	// Colors of the arc
-	var colors = ["steelblue","yellow"];
+	var colors = ["yellow","steelblue"];
+	var stAngle = [0,1*Math.PI];
+	var eAngle = [1*Math.PI,2*Math.PI];
+	var crash = false;	
 	// Creating Arcs of different colors
-	var ring = [];
-	for(var i=0;i<2;i++)
-	{
-		ring.push(new circle(width/2,height/2,colors[i],100,direction,1));
-		direction = !direction;
-	}
+    var ring = [];
+    for(var i=0;i<2;i++)
+    {
+	ring.push(new circle(width/2,height/2,colors[i],100,stAngle[i],eAngle[i]));
+    }
 	
-	// Stop function
-	function stop () 
-	{
-		clearInterval(interval); 
-	}
+// Stop function
+function stop () 
+{
+	crash = true;
+}
 // Animate function
-	 function animate()
-	{
-		 // requestAnimationFrame(animate);
+function animate()
+{
+    if(crash)
+    {
+      return;
+    }
+    else
+    {
+    	requestAnimationFrame(animate);
 		ctx.clearRect(0, 0, width, height);
-    	ring.forEach(function (element) 
-    	{
-    		element.update();
-    		element.angle += 0.5*Math.PI/180;
-    	});
-    	end();
+	    ring.forEach(function (element) 
+	    {
+	    	element.update();
+	    });
+	    ball.draw();
+		ball.paint();
+		ball.objUpdate();
+	    end();
+    }
     	
-	}
+}
 
-   init();
+init();
+var coord = {
+	x: undefined,
+	y: undefined
+}
+// Creating object 
+var ball = new circle(width/2,height/2 + 200, "yellow", 5,0,2*Math.PI);
+// getDistance function
+function getDistance (x1,y1,x2,y2) 
+{
+	var xDistance = x2 - x1;
+	var yDistance = y2 - y1;
+	return Math.sqrt(Math.pow(xDistance,2) + Math.pow(yDistance,2)); 
+}
 
-
-	window.addEventListener("mousemove",function(event)
-	{
-				mouse.x = event.x;
-				mouse.y = event.y;
-	});
-// Creating the bouncing ball
-var ball = new circle(width/2,height/2 + 200, "yellow", 5, direction,2);
 
 // Circle object
-	function circle(x,y,color,radius,direction,radian)
-	{
+function circle(x,y,color,radius,startAngle,endAngle)
+{
 		this.x = x;
 		this.y = y;
 		this.color = color;
 		this.radius = radius;
-		this.angle = 0;
-		this.direction = direction;
-		this.radian = radian;
+		this.width = 15;
+		this.startAngle = startAngle;
+		this.dx = 1.5*Math.PI/180;
+		this.endAngle = endAngle;
 		this.speedY = 0;
 		this.gravity = 0.05;
 		this.gravitySpeed = 0;
@@ -82,43 +84,37 @@ var ball = new circle(width/2,height/2 + 200, "yellow", 5, direction,2);
 		this.draw = function()
 		{
 		ctx.beginPath();
-	    ctx.arc(this.x,this.y,this.radius,0,this.radian*Math.PI,this.direction);
+	    ctx.arc(this.x,this.y,this.radius,this.startAngle,this.endAngle,true);
 	    ctx.strokeStyle = this.color;
 	    ctx.stroke();
 		}
-		this.update = function()
-		{
-			ctx.lineWidth = 20;
-			ctx = canvas.getContext('2d');
-			ctx.save();
-			ctx.translate(this.x,this.y);
-			ctx.rotate(this.angle);
-			ctx.translate(-this.x,-this.y);
-			this.draw();
-			ctx.restore();
 
+		this.update = function () 
+		{
+		ctx = canvas.getContext('2d');
+		ctx.lineWidth = this.width;
+		this.startAngle+=this.dx;
+		this.endAngle+=this.dx;
+		this.draw();
 		}
 		this.paint = function()
 		{
 			ctx.fillStyle = this.color;
 			ctx.fill();
 		}
-		// New position of the ball when clicked
 		this.newPos = function() 
 		{
 			this.gravitySpeed += this.gravity;
 			this.y += this.speedY + this.gravitySpeed; 
 			this.hitBottom();
 		}
-		// Updated position of the ball
 		this.objUpdate = function()
 		{
 			this.newPos();
 			this.draw();
 		}
-		// Function to make the ball go down when not clicked
 		 this.hitBottom = function() 
-		 {
+		{
 	    var rockbottom = height/2 + 200;
 	    if (this.y > rockbottom) 
 	    {
@@ -127,69 +123,124 @@ var ball = new circle(width/2,height/2 + 200, "yellow", 5, direction,2);
 	      ball.speedY = 0;
 	  	}	
      	}
-     	// Function when ball crashes with the arc
+
      	this.crashWith = function(otherobj) 
   		{
-     	var mycol =this.color;
-     	var othercol = otherobj.color;
 	    var mytop = this.y - this.radius;
 	    var mybottom = this.y + (this.radius);
 	    var othertop = otherobj.y - otherobj.radius;
 	    var otherbottom = otherobj.y + (otherobj.radius);
-	    var dir = otherobj.direction;
-	    var crash = false;
-	    if(mycol !== othercol)
+	    var result = false;
+	    if((getDistance(this.x,this.y,otherobj.x,otherbottom)) < this.radius)
 	    {
-	    	if((mybottom <= otherbottom) || (mytop <= othertop))
-	    	{
-	    		crash = true;
-	    	}
-	    }
-	    else
+	   	 if((mybottom<=otherbottom) || (mytop>=othertop))
 	    {
-	    	crash = false;
+	    	result = true;
 	    }
-	    return crash;
-
-  }
+	    }
+	    if((getDistance(this.x,this.y,otherobj.x,(othertop + 15)) < this.radius))
+	    {
+	   	 if((mybottom<=otherbottom) || (mytop>=othertop))
+	    {
+	    	result = true;
+	    }
+	    }
+	    
+	    return result;
 	    
 }
-// To move the ball up
-	function moveUp()
-	{
-		ball.speedY -= 0.5;
-	}
-// To move the ball down
-	function accelerate(n){
-		ball.gravity = n;
-	}
-   canvas.onclick = function()
-   {
+	    
+}
+// Moveup function for object
+function moveUp()
+{
+	ball.speedY -= 0.8;
+}
+// acceleration function for object
+function accelerate(n)
+{
+	ball.gravity = n;
+}
+canvas.onclick = function()
+{
    	moveUp();
-   }
-// function corresponding to accelerate function
-   canvas.onmouseup = function () {
-   	accelerate(0.005);
-   }
-// Stop game function
+}
+canvas.onmouseup = function () 
+{
+   	accelerate(0.035);
+}
+var k=1,x=7;
+var endangle1,actualAngle,ratio1,preciseE,startangle1,ratio2,sn,preciseS;
+var endangle2,ratio_1,precise_E,startangle2,ratio_2,precise_S;
+// Endgame function
 function end () 
 {
-	for (var i = 0; i < ring.length; i++) 
-	{
-		if(ball.crashWith(ring[i]))
-		{
-			stop();
-		}
-		else
-		{
-			ball.draw();
-			ball.paint();
-			ball.objUpdate();
-		}
-	}
+			endangle1 = ring[0].endAngle;
+			endangle2 = ring[1].endAngle;
+			startangle1 = ring[0].startAngle;
+			startangle2 = ring[1].startAngle;
+			actualAngle = Math.PI + 1.5*Math.PI/180;
+			sn = 0.5*Math.PI + 1.5*Math.PI/180;
+			ratio2 = startangle1/sn;
+			ratio_2 = startangle2/sn;
+			ratio1 = endangle1/actualAngle;
+			ratio_1 = endangle2/actualAngle;
+			preciseS = parseFloat(ratio2.toPrecision(3), 10);
+			precise_S = parseFloat(ratio_2.toPrecision(3), 10);
+			preciseE = parseFloat(ratio1.toPrecision(3), 10);
+			precise_E = parseFloat(ratio_1.toPrecision(3), 10);
+			var condition = (Number.isInteger(preciseE) || preciseS>3);
+			if(condition)
+			{
+				if(ball.y>=ring[0].y)
+				{
+					if((preciseS || (preciseE>1)) && ((precise_S>5) || (precise_E%2 == 0)))
+				{
+					if(ball.crashWith(ring[0]))
+					{
+						stop();
+						console.log('a');
+					}
+					else
+					{
+						ball.draw();
+						ball.paint();
+						ball.objUpdate();
+					}
+	
+				}
+				else 
+				{
+				 	return;
+				} 
+				}
+			    else
+				{
+					if((preciseS || (preciseE>1)) && ((precise_S>x) && precise_S<x+2))
+					{
+						if(ball.crashWith(ring[0]))
+					{
+						console.log(ball.y,ring[0].y);
+						stop();
+					}
+					else
+					{
+						ball.draw();
+						ball.paint();
+						ball.objUpdate();
+					}
+					}
+				}
+			}
+
+			actualAngle = Math.PI + 1.5*Math.PI/180 - 1.5*Math.PI/(180*k);
+			sn = 0.5*Math.PI + 1.5*Math.PI/180 - 1.5*Math.PI/(180*k);
+			
+			k++;
+			
 
 }
 
+animate();
   
-
-}
+ }
