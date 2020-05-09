@@ -13,15 +13,16 @@ window.onload = function()
 	}
 	var endangle1,actualAngle,ratio1,preciseE,startangle1,ratio2,sn,preciseS;
 	var endangle2,ratio_1,precise_E,startangle2,ratio_2,precise_S;
-	var u=1,k=1,v = 3;
+	var u=1,k=1,v=3,z=0,dx=0;
 	var colors = ["yellow","steelblue"];
+	var velocities = [0.42,0.68,1,1.3];
 	var stAngle = 0;
 	var eAngle = 1*Math.PI;
 	var crash,upper = false;
 	var direction = false;
 	var hitbottom = false;
 	var above,lower = false;
-	var next =false;
+	var next,over =false;
 	var index = 0;	
 // Creating Arcs of different colors
 var ring = [];
@@ -42,6 +43,7 @@ createArc();
 function stop () 
 {
 	crash = true;
+	console.log(over,z);
 }
 // Animate function
 function animate()
@@ -56,15 +58,33 @@ function animate()
 		ctx.clearRect(0, 0, width, height);
 	    for(var i=0;i<10;i++)
 	    {
-	    	
-	    	if(above)
-	    	{
-	    		ring[i].y += 1;
-	    	}
-	    	
 	    	ring[i].update();
 	    }
-	    
+	    for(var j=0;j<5;j++)
+		{
+			for(var i=z;i<z+2;i++)
+		{
+			
+			if(above)
+	    	{
+	    		if(ring[i].y<=height/2 - 100)
+	    		{
+	    			ring[i].y += velocities[dx-1];
+	    			if(ball.y<=height/2+50)
+	    			{
+	    				ball.y+= 0.2;
+	    				ball.draw();
+						ball.paint();
+	    			}
+	    		}
+	    	}
+	    	if(over)
+	    	{
+	    		ring[z-2].y += 1;
+	    		ring[z-1].y += 1;
+	    	}
+		}
+		}
 	    
 	    ball.draw();
 		ball.paint();
@@ -156,17 +176,11 @@ function circle(x,y,color,radius,startAngle,endAngle,direction)
 	    var result = false;
 	    if((getDistance(this.y,otherbottom)<this.radius) && lower )
 	    {
-	   	/* if((mybottom<=otherbottom) || (mytop>=othertop))
-	    {
-	    	result = true;
-	    }  */ result = true;
+	   	 	result = true;
 	    }
 	    if(((getDistance(this.y,(othertop + 15)) < this.radius) || (getDistance(this.y,(othertop - 15)) < this.radius)) && upper)
 	    {
-	   	 if((mybottom<=otherbottom) || (mytop>=othertop))
-	    {
-	    	result = true;
-	    }
+	   		result = true;
 	    }
 	    return result;
 	    
@@ -205,11 +219,11 @@ function end ()
 				lower = true;
 				if(startangle1 > parseFloat(((u*0.5)*Math.PI).toPrecision(3),10) && startangle2 >  parseFloat(((u*0.5)*Math.PI).toPrecision(3),10))
 				{ 	
-					console.log(startangle1,startangle2);
+					// console.log(startangle1,startangle2);
 					if(ball.crashWith(ring[index+1]))
 				{
 					stop();
-					console.log(startangle2,startangle1,u);
+					console.log(startangle2,startangle1,index);
 				}
 				else
 				{
@@ -252,11 +266,16 @@ function end ()
 			{
 				above = true;
 				index = index + 2;
-				console.log(index);
+				z = z +2;
+				dx++;
 			}
-			if(ring[index].y > width)
+			if(ring[index].y >= height)
 			{
 				above = false;
+			}
+			if(ring[index].y <=height/2 - 100 && distance<0)
+			{
+				over = true;
 			}
 			actualAngle = Math.PI + 1.5*Math.PI/180 - 1.5*Math.PI/(180*k);
 			sn = 0.5*Math.PI + 1.5*Math.PI/180 - 1.5*Math.PI/(180*k);
