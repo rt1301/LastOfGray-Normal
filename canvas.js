@@ -154,12 +154,12 @@ function circle(x,y,color,radius,startAngle,endAngle,direction)
 	    var othertop = otherobj.y - otherobj.radius;
 	    var otherbottom = otherobj.y + (otherobj.radius);
 	    var result = false;
-	    if((otherbottom)-mytop>=0 && lower )
+	    if((getDistance(this.y,otherbottom)<this.radius) && lower )
 	    {
-	   	 if((mybottom<=otherbottom) || (mytop>=othertop))
+	   	/* if((mybottom<=otherbottom) || (mytop>=othertop))
 	    {
 	    	result = true;
-	    }  
+	    }  */ result = true;
 	    }
 	    if(((getDistance(this.y,(othertop + 15)) < this.radius) || (getDistance(this.y,(othertop - 15)) < this.radius)) && upper)
 	    {
@@ -203,29 +203,27 @@ function end ()
 			{
 				upper = false;
 				lower = true;
-				if(startangle1>=u*0.5*Math.PI && startangle2>=u*0.5*Math.PI)
-				{ 	console.log(u*sn,startangle1);
+				if(startangle1 > parseFloat(((u*0.5)*Math.PI).toPrecision(3),10) && startangle2 >  parseFloat(((u*0.5)*Math.PI).toPrecision(3),10))
+				{ 	
+					console.log(startangle1,startangle2);
 					if(ball.crashWith(ring[index+1]))
 				{
 					stop();
-					console.log(startangle2,startangle1,u*sn);
+					console.log(startangle2,startangle1,u);
 				}
 				else
 				{
-						console.log('exit');
 						ball.draw();
 						ball.paint();
 						ball.objUpdate();
-
 				}
-				u = u + 4;
 				}
 			}
 			else
 			{
 				lower = false;
 				upper = true;
-				if(startangle1>v*0.5*Math.PI && startangle2>v*0.5*Math.PI)
+				if(startangle1> parseFloat(((v*0.5)*Math.PI).toPrecision(3),10) && startangle2>  parseFloat(((v*0.5)*Math.PI).toPrecision(3),10))
 				{
 					if(ball.crashWith(ring[index+1]))
 				{
@@ -234,16 +232,21 @@ function end ()
 				}
 				else
 				{
-						console.log('exit');
 						ball.draw();
 						ball.paint();
 						ball.objUpdate();
-
 				}
-				v = v+4;
 				}
 			}
 			
+			if(startangle2 > (u+2)*0.5*Math.PI && startangle1 < (u+4)*0.5*Math.PI)
+			{
+				u = u+4;
+			}
+			if(startangle2 > (v+2)*0.5*Math.PI && startangle1 < (v+4)*0.5*Math.PI)
+			{
+				v = v + 4;
+			}
 			var distance = (ball.y+ball.radius) - (ring[index].y - ring[index].radius);
 			if(distance<0)
 			{
