@@ -16,10 +16,11 @@ window.onload = function()
 	var u=1,k=1,v=3,z=0,dx=0;
 	var colors = ["yellow","steelblue"];
 	var velocities = [0.42,0.68,1,1.3];
+	var rockbottom = height/2 +200;
 	var stAngle = 0;
 	var eAngle = 1*Math.PI;
 	var crash,upper = false;
-	var direction = false;
+	var direction,condition = false;
 	var hitbottom = false;
 	var above,lower = false;
 	var next,over =false;
@@ -28,7 +29,7 @@ window.onload = function()
 var ring = [];
 function createArc () 
 {
-	for(var j=0;j<5;j++)
+	for(var j=0;j<6;j++)
 	{
 		for(var i=0;i<2;i++)
 	{
@@ -43,13 +44,13 @@ createArc();
 function stop () 
 {
 	crash = true;
-	console.log(over,z);
 }
 // Animate function
 function animate()
 {
-    if(crash)
+    if(crash || hitbottom)
     {
+      console.log(ball,rockbottom);
       return 1;
     }
     else
@@ -60,7 +61,7 @@ function animate()
 	    {
 	    	ring[i].update();
 	    }
-	    for(var j=0;j<5;j++)
+	    for(var j=0;j<6;j++)
 		{
 			for(var i=z;i<z+2;i++)
 		{
@@ -69,7 +70,7 @@ function animate()
 	    	{
 	    		if(ring[i].y<=height/2 - 100)
 	    		{
-	    			ring[i].y += velocities[dx-1];
+	    			ring[i].y += velocities[0];
 	    			if(ball.y<=height/2+50)
 	    			{
 	    				ball.y+= 0.2;
@@ -78,10 +79,20 @@ function animate()
 	    			}
 	    		}
 	    	}
-	    	if(over)
+	    	if(over && (z<=12 && dx<=6))
 	    	{
-	    		ring[z-2].y += 1;
-	    		ring[z-1].y += 1;
+	    		ring[3+dx].y = height - 200*(j);
+	    		ring[2+dx].y = height - 200*(j);
+	    		if(ring[z-2].y< height - 35)
+	    		{
+	    			ring[z-2].y += 0.65;
+	    			ring[z-1].y += 0.65;
+	    		}
+	    	}
+	    	if(z>6 && dx<=8)
+	    	{
+	    		ring[z-2].y += 0.65;
+	    		ring[z-1].y += 0.65;
 	    	}
 		}
 		}
@@ -153,13 +164,15 @@ function circle(x,y,color,radius,startAngle,endAngle,direction)
 		}
 		 this.hitBottom = function() 
 		{
-	    var rockbottom = height/2 + 200;
 	    if (this.y > rockbottom) 
 	    {
 	      this.y = rockbottom;
 	      this.gravitySpeed = 0;
 	      ball.speedY = 0;
-	      hitbottom = true;
+	      if(condition)
+	      {
+	      	hitbottom = true;
+	      }
 	  	}
 	  	else 
 	  	{
@@ -267,9 +280,12 @@ function end ()
 				above = true;
 				index = index + 2;
 				z = z +2;
-				dx++;
+				dx = dx + 2;
+				rockbottom = height/2+70;
+				condition = true;
+				console.log(z,index,hitbottom);
 			}
-			if(ring[index].y >= height)
+			if(ring[index].y >= height && index<=10)
 			{
 				above = false;
 			}
@@ -279,7 +295,10 @@ function end ()
 			}
 			actualAngle = Math.PI + 1.5*Math.PI/180 - 1.5*Math.PI/(180*k);
 			sn = 0.5*Math.PI + 1.5*Math.PI/180 - 1.5*Math.PI/(180*k);
-			
+			if(index>=ring.index-2)
+			{
+				stop();
+			}
 			k++;
 			
 
