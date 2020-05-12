@@ -33,6 +33,9 @@
 	var ls_array = [];
 	var gameNum = 0;
 	var ball;
+	var jumpSound = new Audio("jump.wav");
+	var starSound = new Audio("star.wav");
+	var endSound = new Audio("dead.wav");
 //    To randomise array elements - Fisher-Yates shuffle
 function shuffle(array) 
 {
@@ -99,6 +102,7 @@ function animate()
 	    	ctx.font = "700 50px Muli";
 	    	ctx.fillText("Game Over, Your Final Score is: " +ls_array[length-1], width/2,height/2);
 	    }
+	    endSound.play();
 	    return 1;
     }
     else
@@ -263,6 +267,7 @@ function accelerate(n)
 }
 canvas.onclick = function()
 {
+	jumpSound.play();
    	moveUp();
 }
   canvas.onmouseup = function () 
@@ -326,6 +331,7 @@ function end()
 			distance = (ball.y+ball.radius) - (ring[index].y - ring[index].radius);
 			if(distance<0)
 			{
+				starSound.play();
 				above = true;
 				index = index + 2;
 				z = z +2;
