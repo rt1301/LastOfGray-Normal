@@ -5,9 +5,19 @@
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	<title>The Last Draw</title>
 	<link rel="stylesheet" href="style.css">
+	<link href="https://fonts.googleapis.com/css2?family=Muli:wght@400;700&display=swap" rel="stylesheet">
 </head>
 <body>
 	<h1>The Last Draw</h1>
+	<div id="navBar">
+		<div id="scoreDisplay">
+			Score is: <span id="score">0</span>
+		</div>
+		<button id="playBtn">Play</button>
+		<div id="bestScore">
+			Best Score is: <span id="bScore">0</span>
+		</div>
+	</div>
 	<canvas id="container">
 	</canvas>
 <script src="canvas.js"></script>

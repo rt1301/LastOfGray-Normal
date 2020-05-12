@@ -1,22 +1,27 @@
-window.onload = function()
-{
 	var ctx;
+	var scoreDisplay = document.getElementById("score");
+	var playBtn = document.getElementById("playBtn");
 	var canvas = document.querySelector("canvas");
-	var width = window.innerWidth - 40;
-	var height = window.innerHeight - 40;
+	var width = window.innerWidth-21;
+	var height = window.innerHeight - 80;
 	var interval;
+	var bestScore = document.getElementById('bScore');
 	function init()
 	{
-		canvas.width = window.innerWidth - 40;
-		canvas.height = window.innerHeight - 40;
+		canvas.width = window.innerWidth-21;
+		canvas.height = window.innerHeight - 80;
 		ctx = canvas.getContext('2d');
 	}
 	var endangle1,actualAngle,ratio1,preciseE,startangle1,ratio2,sn,preciseS;
 	var endangle2,ratio_1,precise_E,startangle2,ratio_2,precise_S;
+	var distance = 0;
+	var score=0;
+	var keys = [];
+	var final = false;
 	var u=1,k=1,v=3,z=0,dx=0;
-	var colors = ["yellow","steelblue"];
-	var velocities = [0.42,0.68,1,1.3];
-	var rockbottom = height/2 +200;
+	var colors = ["#5EC8F2","#ff33cc","yellow","#F20505","#8B29A6"];
+	var velocity = 0.56;
+	var rockbottom = height/2 + 160;
 	var stAngle = 0;
 	var eAngle = 1*Math.PI;
 	var crash,upper = false;
@@ -25,6 +30,30 @@ window.onload = function()
 	var above,lower = false;
 	var next,over =false;
 	var index = 0;	
+	var ls_array = [];
+	var gameNum = 0;
+	var ball;
+//    To randomise array elements - Fisher-Yates shuffle
+function shuffle(array) 
+{
+    var currentIndex = array.length, temporaryValue, randomIndex;
+  
+    // While there remain elements to shuffle...
+    while (0 !== currentIndex) {
+  
+      // Pick a remaining element...
+      randomIndex = Math.floor(Math.random() * currentIndex);
+      currentIndex -= 1;
+  
+      // And swap it with the current element.
+      temporaryValue = array[currentIndex];
+      array[currentIndex] = array[randomIndex];
+      array[randomIndex] = temporaryValue;
+    }
+  
+    return array;
+}
+shuffle(colors);
 // Creating Arcs of different colors
 var ring = [];
 function createArc () 
@@ -33,13 +62,20 @@ function createArc ()
 	{
 		for(var i=0;i<2;i++)
 	{
-	ring.push(new circle(width/2,(height/2 - 400*j),colors[i],100,stAngle,eAngle,direction));
+	ring.push(new circle(width/2,(height/2 - 360*j),colors[i],100,stAngle,eAngle,direction));
 	direction = !direction;
 	}
 	}
 
 }
 createArc();
+window.addEventListener('resize', () => 
+{
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight - 80;
+
+  init();
+});
 // Stop function
 function stop () 
 {
@@ -50,8 +86,20 @@ function animate()
 {
     if(crash || hitbottom)
     {
-      console.log(ball,rockbottom);
-      return 1;
+	    var length = ls_array.length;
+		scoreDisplay.textContent = score.toString();
+		bestScore.textContent = ls_array[length-1];
+		distance = 0;
+	    playBtn.textContent = "Restart";
+	    canvas.classList.add('selected');
+	    if(final)
+	    {
+	    	ctx.clearRect(0, 0, width, height);
+	    	ctx.fillStyle = "white";
+	    	ctx.font = "700 50px Muli";
+	    	ctx.fillText("Game Over, Your Final Score is: " +ls_array[length-1], width/2,height/2);
+	    }
+	    return 1;
     }
     else
     {
@@ -68,10 +116,10 @@ function animate()
 			
 			if(above)
 	    	{
-	    		if(ring[i].y<=height/2 - 100)
+	    		if(ring[i].y<=height/2 - 60)
 	    		{
-	    			ring[i].y += velocities[0];
-	    			if(ball.y<=height/2+50)
+	    			ring[i].y += velocity;
+	    			if(ball.y<=height/2+10)
 	    			{
 	    				ball.y+= 0.2;
 	    				ball.draw();
@@ -81,18 +129,18 @@ function animate()
 	    	}
 	    	if(over && (z<=12 && dx<=6))
 	    	{
-	    		ring[3+dx].y = height - 200*(j);
-	    		ring[2+dx].y = height - 200*(j);
+	    		ring[3+dx].y = height - 160*(j);
+	    		ring[2+dx].y = height - 160*(j);
 	    		if(ring[z-2].y< height - 35)
 	    		{
-	    			ring[z-2].y += 0.65;
-	    			ring[z-1].y += 0.65;
+	    			ring[z-2].y += 0.56;
+	    			ring[z-1].y += 0.56;
 	    		}
 	    	}
 	    	if(z>6 && dx<=8)
 	    	{
-	    		ring[z-2].y += 0.65;
-	    		ring[z-1].y += 0.65;
+	    		ring[z-2].y += 0.56;
+	    		ring[z-1].y += 0.56;
 	    	}
 		}
 		}
@@ -104,9 +152,9 @@ function animate()
     }
     	
 }
-
+ball = new circle(width/2,height/2 + 160, colors[0], 5,0,2*Math.PI);
 init();
-var ball = new circle(width/2,height/2 + 200, "yellow", 5,0,2*Math.PI);
+animate();
 // getDistance function
 function getDistance (y1,y2) 
 {
@@ -174,6 +222,10 @@ function circle(x,y,color,radius,startAngle,endAngle,direction)
 	      	hitbottom = true;
 	      }
 	  	}
+	  	else if(this.y <= rockbottom) 
+	  	{
+	  		hitbottom = false;	
+	  	}
 	  	else 
 	  	{
 	  		hitbottom = false;	
@@ -218,7 +270,7 @@ canvas.onclick = function()
    	accelerate(0.030);
 }
 
-function end () 
+function end() 
 {
 			endangle1 = ring[index].endAngle;
 			endangle2 = ring[index+1].endAngle;
@@ -232,11 +284,9 @@ function end ()
 				lower = true;
 				if(startangle1 > parseFloat(((u*0.5)*Math.PI).toPrecision(3),10) && startangle2 >  parseFloat(((u*0.5)*Math.PI).toPrecision(3),10))
 				{ 	
-					// console.log(startangle1,startangle2);
 					if(ball.crashWith(ring[index+1]))
 				{
 					stop();
-					console.log(startangle2,startangle1,index);
 				}
 				else
 				{
@@ -255,7 +305,6 @@ function end ()
 					if(ball.crashWith(ring[index+1]))
 				{
 					stop();
-					console.log('else');
 				}
 				else
 				{
@@ -274,22 +323,24 @@ function end ()
 			{
 				v = v + 4;
 			}
-			var distance = (ball.y+ball.radius) - (ring[index].y - ring[index].radius);
+			distance = (ball.y+ball.radius) - (ring[index].y - ring[index].radius);
 			if(distance<0)
 			{
 				above = true;
 				index = index + 2;
 				z = z +2;
 				dx = dx + 2;
-				rockbottom = height/2+70;
+				rockbottom = height/2+160;
 				condition = true;
-				console.log(z,index,hitbottom);
+				score++;
+				lsItems();
+				getLsItems();
 			}
 			if(ring[index].y >= height && index<=10)
 			{
 				above = false;
 			}
-			if(ring[index].y <=height/2 - 100 && distance<0)
+			if(ring[index].y <=height/2 - 60 && distance<0)
 			{
 				over = true;
 			}
@@ -298,12 +349,56 @@ function end ()
 			if(index>=ring.index-2)
 			{
 				stop();
+				final = true;
 			}
 			k++;
 			
 
 }
+// Reset Conditions
+function resetCondition()
+{
+	crash = false,upper = false, direction = false, above = false, lower = false, next = false, over = false;
+	index = 0;
+	hitbottom = false;
+	condition = false;
+	final = false;
+	u=1,k=1,v=3,z=0,dx=0;
+	score = 0;
+	distance = 0;
+	scoreDisplay.textContent = '0';
+}
+function lsItems()
+{
+	var game = "Score " + gameNum.toString();
+	var lsScore = score.toString();
+	keys.push(game);
+	localStorage.setItem(game, lsScore);
+}
+function getLsItems()
+{
+	if(localStorage.length>0)
+	{
+		for(var i=0; i<keys.length;i++)
+	{
+		ls_array.push(localStorage.getItem(keys[i]));
+	}
+		ls_array.sort();
+	}
+}
 
-animate();
-  
- }
+playBtn.addEventListener("click",function()
+{
+	if(this.textContent === "Restart")
+	{
+		gameNum++;
+		resetCondition();
+		init();
+		shuffle(colors);
+		ring = [];
+		createArc();
+		ball = new circle(width/2,height/2 + 160, colors[0], 5,0,2*Math.PI);
+		animate();
+		canvas.classList.toggle("selected");
+	}
+});
